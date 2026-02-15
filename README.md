@@ -135,6 +135,10 @@ This package ships a pre-populated SQLite database (~28 MB) containing prayer ti
 - React Native >= 0.71
 - `@op-engineering/op-sqlite` >= 15.0.0
 
+## Demo App
+
+See the [My Prayers Test App](https://github.com/OneAboveAll1964/My-Prayers-React-Native-Test) for a full working example showcasing all features.
+
 ## Credits
 
 This package is a React Native port of [muslim-data-flutter](https://github.com/kosratdev/muslim-data-flutter) by [Kosrat D. Ahmad](https://github.com/kosratdev). The database and prayer time calculation logic originate from that project.
