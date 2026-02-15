@@ -1,17 +1,13 @@
-# React Native Muslim Data
+# react-native-muslim-data
 
-A React Native library providing Islamic data including:
+A React Native library providing Islamic data **offline** — no API keys, no network required.
 
-- **Prayer Times** — Fixed (from database) or Calculated (astronomical formulas)
-- **Offline Geocoding** — Search locations, geocode, reverse geocode
-- **Azkars (Hisnul Muslim)** — Categories, chapters, and items with translations
-- **99 Names of Allah** — With translations in multiple languages
+- **Prayer Times** — fixed (database) and calculated using 7 methods
+- **Offline Geocoder** — search, geocode, and reverse-geocode 6700+ cities
+- **99 Names of Allah** — with translations and transliterations
+- **Azkars (Hisnul Muslim)** — categories, chapters, and items
 
-Ported from [muslim-data-flutter](https://github.com/my-prayers/muslim-data-flutter).
-
-## Supported Languages
-
-`en`, `ar`, `ckb`, `ckb_Badini`, `fa`, `ru`
+All data is available in **6 languages**: English, Arabic, Kurdish (Sorani), Kurdish (Badini), Farsi, and Russian.
 
 ## Installation
 
@@ -19,196 +15,125 @@ Ported from [muslim-data-flutter](https://github.com/my-prayers/muslim-data-flut
 npm install react-native-muslim-data @op-engineering/op-sqlite
 ```
 
-`@op-engineering/op-sqlite` is the only peer dependency (for SQLite access).
-
-### Database Setup
-
-This package ships a pre-populated SQLite database. After installing, link the asset automatically:
+Then link the bundled database into your native projects:
 
 ```bash
 npx react-native-asset
 ```
 
-This copies `muslim_db_v3.0.0.db` into your native projects (Android assets + iOS bundle) so the SQLite engine can access it at runtime.
+> `@op-engineering/op-sqlite` is the only peer dependency.
 
-> **Why is this needed?** Unlike Flutter's `pubspec.yaml` asset bundling, React Native doesn't automatically include files from `node_modules` in the native app bundle. The native SQLite engine can only read from the platform's asset system, so the DB must be placed there explicitly. `react-native-asset` automates this.
-
-## Usage
-
-### Initialize
-
-Call `open()` once at app startup before using any repository. This is **async** because it copies the bundled database from native assets on first launch:
+## Quick Start
 
 ```ts
-import { MuslimDb } from 'react-native-muslim-data';
+import { MuslimDb, LocationRepository, PrayerTimeRepository, createPrayerAttribute } from 'react-native-muslim-data';
 
+// 1. Open once at app startup (async — copies DB from assets on first launch)
 await MuslimDb.getInstance().open();
+
+// 2. Use any repository
+const location = LocationRepository.getInstance().geocoder('GB', 'London');
+
+const prayers = PrayerTimeRepository.getInstance().getPrayerTimes({
+  location: location!,
+  date: new Date(),
+  attribute: createPrayerAttribute(),
+});
+
+console.log(prayers?.fajr);   // Date object
+console.log(prayers?.dhuhr);  // Date object
 ```
 
-### Location Services
+## API
+
+### `MuslimDb`
+
+| Method | Description |
+|--------|-------------|
+| `getInstance()` | Singleton accessor |
+| `open(): Promise<void>` | Open the database (call once at startup) |
+| `close(): void` | Close the database connection |
+
+### `LocationRepository`
+
+| Method | Returns |
+|--------|---------|
+| `searchLocations(name)` | `Location[]` |
+| `geocoder(countryCode, cityName)` | `Location \| null` |
+| `reverseGeocoder(lat, lng)` | `Location \| null` |
+| `getFixedPrayerTimesList()` | `Location[]` |
+
+### `PrayerTimeRepository`
+
+| Method | Returns |
+|--------|---------|
+| `getPrayerTimes({ location, date, attribute, useFixedPrayer? })` | `PrayerTime \| null` |
+
+`PrayerTime` contains: `fajr`, `sunrise`, `dhuhr`, `asr`, `maghrib`, `isha` — all `Date` objects.
+
+### `NameOfAllahRepository`
+
+| Method | Returns |
+|--------|---------|
+| `getNames(language?)` | `NameOfAllah[]` — `{ id, name, translation, transliteration }` |
+
+### `HisnulMuslimRepository`
+
+| Method | Returns |
+|--------|---------|
+| `getAzkarCategories(language?)` | `AzkarCategory[]` |
+| `getAzkarChapters({ language?, categoryId? })` | `AzkarChapter[]` |
+| `getAzkarChaptersByIds({ language?, chapterIds })` | `AzkarChapter[]` |
+| `searchAzkarChapters({ language?, query })` | `AzkarChapter[]` |
+| `getAzkarItems({ language?, chapterId })` | `AzkarItem[]` |
+
+### Calculation Methods
+
+| Key | Description |
+|-----|-------------|
+| `makkah` | Umm al-Qura, Makkah |
+| `mwl` | Muslim World League |
+| `isna` | Islamic Society of North America |
+| `karachi` | University of Islamic Sciences, Karachi |
+| `egypt` | Egyptian General Authority of Survey |
+| `jafari` | Ithna Ashari |
+| `tehran` | Institute of Geophysics, University of Tehran |
+| `custom` | Custom fajr/isha angles |
+
+### Prayer Attribute
 
 ```ts
-import { LocationRepository } from 'react-native-muslim-data';
-
-const locationRepo = LocationRepository.getInstance();
-
-// Search for locations
-const locations = locationRepo.searchLocations('makka');
-
-// Geocode by country code + city name
-const location = locationRepo.geocoder('GB', 'London');
-
-// Reverse geocode by coordinates
-const nearest = locationRepo.reverseGeocoder(51.5074, -0.1278);
-```
-
-### Prayer Times
-
-```ts
-import {
-  PrayerTimeRepository,
-  createPrayerAttribute,
-  CalculationMethod,
-  AsrMethod,
-  HigherLatitudeMethod,
-} from 'react-native-muslim-data';
-
-const prayerRepo = PrayerTimeRepository.getInstance();
+import { createPrayerAttribute, CalculationMethod, AsrMethod, HigherLatitudeMethod } from 'react-native-muslim-data';
 
 const attribute = createPrayerAttribute({
-  calculationMethod: CalculationMethod.makkah,
-  asrMethod: AsrMethod.shafii,
-  higherLatitudeMethod: HigherLatitudeMethod.angleBased,
-  offset: [0, 0, 0, 0, 0, 0],
+  calculationMethod: CalculationMethod.mwl,      // default: makkah
+  asrMethod: AsrMethod.shafii,                    // default: shafii
+  higherLatitudeMethod: HigherLatitudeMethod.angleBased, // default: angleBased
+  offset: [0, 0, 0, 0, 0, 0],                    // [fajr, sunrise, dhuhr, asr, maghrib, isha] in minutes
 });
-
-// `location` obtained from LocationRepository
-const prayerTime = prayerRepo.getPrayerTimes({
-  location,
-  date: new Date(),
-  attribute,
-});
-
-if (prayerTime) {
-  console.log('Fajr:', prayerTime.fajr);
-  console.log('Sunrise:', prayerTime.sunrise);
-  console.log('Dhuhr:', prayerTime.dhuhr);
-  console.log('Asr:', prayerTime.asr);
-  console.log('Maghrib:', prayerTime.maghrib);
-  console.log('Isha:', prayerTime.isha);
-}
 ```
 
-### Azkars (Hisnul Muslim)
+### Language
 
 ```ts
-import { HisnulMuslimRepository, Language } from 'react-native-muslim-data';
+import { Language } from 'react-native-muslim-data';
 
-const azkarRepo = HisnulMuslimRepository.getInstance();
-
-// Get all azkar categories
-const categories = azkarRepo.getAzkarCategories(Language.en);
-
-// Get chapters for a category
-const chapters = azkarRepo.getAzkarChapters({
-  language: Language.en,
-  categoryId: 1,
-});
-
-// Get chapters by IDs (useful for favorites)
-const favoriteChapters = azkarRepo.getAzkarChaptersByIds({
-  language: Language.en,
-  chapterIds: [12, 15],
-});
-
-// Search azkar chapters
-const results = azkarRepo.searchAzkarChapters({
-  language: Language.ar,
-  query: 'morning',
-});
-
-// Get azkar items for a chapter
-const items = azkarRepo.getAzkarItems({
-  language: Language.en,
-  chapterId: 1,
-});
+Language.en           // English
+Language.ar           // Arabic
+Language.ckb          // Kurdish (Sorani)
+Language.ckbBadini    // Kurdish (Badini)
+Language.fa           // Farsi
+Language.ru           // Russian
 ```
 
-### Names of Allah
+## How It Works
 
-```ts
-import { NameOfAllahRepository, Language } from 'react-native-muslim-data';
+This package ships a pre-populated SQLite database (~28 MB) containing prayer times, location data, azkars, and names of Allah. On install, `npx react-native-asset` copies the database into your native project's asset directories. At runtime, `open()` moves it from native assets to the documents directory where the SQLite engine can read it.
 
-const namesRepo = NameOfAllahRepository.getInstance();
-const names = namesRepo.getNames(Language.en);
-```
+## Requirements
 
-## Project Structure
-
-```
-src/
-├── index.ts                              # Main entry point
-├── data/
-│   ├── database/
-│   │   ├── muslimDb.ts                   # SQLite singleton wrapper
-│   │   ├── muslimDao.ts                  # Data access object
-│   │   └── rowQuery.ts                   # SQL query builder
-│   └── models/
-│       ├── language.ts                   # Supported languages enum
-│       ├── azkars/
-│       │   ├── azkarCategory.ts
-│       │   ├── azkarChapter.ts
-│       │   └── azkarItem.ts
-│       ├── location/
-│       │   └── location.ts
-│       ├── names/
-│       │   └── nameOfAllah.ts
-│       └── prayerTimes/
-│           ├── asrMethod.ts
-│           ├── calculatedPrayerTime.ts   # Astronomical prayer time calculator
-│           ├── calculationMethod.ts
-│           ├── customMethod.ts
-│           ├── higherLatitudeMethod.ts
-│           ├── prayerAttribute.ts
-│           └── prayerTime.ts
-├── repositories/
-│   ├── locationRepository.ts
-│   ├── prayerTimeRepository.ts
-│   ├── nameOfAllahRepository.ts
-│   └── hisnulMuslimRepository.ts
-└── utils/
-    ├── dateUtils.ts
-    └── stringDate.ts
-```
-
-## Publishing to npm
-
-1. **Set your author/repo** in `package.json`:
-   ```json
-   "author": "Your Name <your@email.com>",
-   "repository": {
-     "type": "git",
-     "url": "https://github.com/your-username/react-native-muslim-data"
-   }
-   ```
-
-2. **Login to npm** (one-time):
-   ```bash
-   npm login
-   ```
-
-3. **Publish**:
-   ```bash
-   npm publish
-   ```
-
-Only files listed in the `files` field of `package.json` will be published (`src/`, `assets/db/`, `react-native.config.js`, `README.md`). The `node_modules/` and other dev files are excluded automatically.
-
-To publish updates later, bump the version and publish again:
-```bash
-npm version patch   # or minor / major
-npm publish
-```
+- React Native >= 0.71
+- `@op-engineering/op-sqlite` >= 15.0.0
 
 ## License
 
