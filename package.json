@@ -4,8 +4,18 @@
   "description": "React Native library providing Prayer Times, Offline Geocoder, Names of Allah, and Azkars (Hisnul Muslim)",
   "main": "src/index.ts",
   "types": "src/index.ts",
+  "files": [
+    "src/",
+    "assets/db/muslim_db_v3.0.0.db",
+    "react-native.config.js",
+    "README.md"
+  ],
   "scripts": {
     "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
   },
   "keywords": [
     "react-native",

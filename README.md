@@ -23,14 +23,15 @@ npm install react-native-muslim-data @op-engineering/op-sqlite
 
 ### Database Setup
 
-This package includes a pre-populated SQLite database (`muslim_db_v3.0.0.db`).
-You must bundle it with your app:
+This package ships a pre-populated SQLite database. After installing, link the asset automatically:
 
-**Android:**
-Copy `muslim_db_v3.0.0.db` into `android/app/src/main/assets/`.
+```bash
+npx react-native-asset
+```
 
-**iOS:**
-Add `muslim_db_v3.0.0.db` to your Xcode project (drag into the project navigator and ensure it's included in the app target's "Copy Bundle Resources" build phase).
+This copies `muslim_db_v3.0.0.db` into your native projects (Android assets + iOS bundle) so the SQLite engine can access it at runtime.
+
+> **Why is this needed?** Unlike Flutter's `pubspec.yaml` asset bundling, React Native doesn't automatically include files from `node_modules` in the native app bundle. The native SQLite engine can only read from the platform's asset system, so the DB must be placed there explicitly. `react-native-asset` automates this.
 
 ## Usage
 
@@ -178,6 +179,35 @@ src/
 └── utils/
     ├── dateUtils.ts
     └── stringDate.ts
+```
+
+## Publishing to npm
+
+1. **Set your author/repo** in `package.json`:
+   ```json
+   "author": "Your Name <your@email.com>",
+   "repository": {
+     "type": "git",
+     "url": "https://github.com/your-username/react-native-muslim-data"
+   }
+   ```
+
+2. **Login to npm** (one-time):
+   ```bash
+   npm login
+   ```
+
+3. **Publish**:
+   ```bash
+   npm publish
+   ```
+
+Only files listed in the `files` field of `package.json` will be published (`src/`, `assets/db/`, `react-native.config.js`, `README.md`). The `node_modules/` and other dev files are excluded automatically.
+
+To publish updates later, bump the version and publish again:
+```bash
+npm version patch   # or minor / major
+npm publish
 ```
 
 ## License
