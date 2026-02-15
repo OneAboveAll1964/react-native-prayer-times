@@ -4,6 +4,6 @@ module.exports = {
       ios: {},
       android: {},
     },
-    assets: ['./assets/db'],
+    assets: ['./assets'],
   },
 };

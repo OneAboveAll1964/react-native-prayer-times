@@ -6,7 +6,7 @@
   "types": "src/index.ts",
   "files": [
     "src/",
-    "assets/db/muslim_db_v3.0.0.db",
+    "assets/custom/muslim_db_v3.0.0.db",
     "react-native.config.js",
     "README.md"
   ],
@@ -30,11 +30,11 @@
   "author": "",
   "license": "MIT",
   "peerDependencies": {
-    "@op-engineering/op-sqlite": ">=5.0.0",
+    "@op-engineering/op-sqlite": ">=15.0.0",
     "react-native": ">=0.71.0"
   },
   "devDependencies": {
-    "@op-engineering/op-sqlite": "^11.0.0",
+    "@op-engineering/op-sqlite": "^15.2.5",
     "typescript": "^5.4.0",
     "react-native": "^0.76.0"
   }

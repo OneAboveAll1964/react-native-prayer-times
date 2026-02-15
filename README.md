@@ -37,12 +37,12 @@ This copies `muslim_db_v3.0.0.db` into your native projects (Android assets + iO
 
 ### Initialize
 
-Call `open()` once at app startup before using any repository:
+Call `open()` once at app startup before using any repository. This is **async** because it copies the bundled database from native assets on first launch:
 
 ```ts
 import { MuslimDb } from 'react-native-muslim-data';
 
-MuslimDb.getInstance().open();
+await MuslimDb.getInstance().open();
 ```
 
 ### Location Services

@@ -1,4 +1,4 @@
-import { open, type DB } from '@op-engineering/op-sqlite';
+import { open, moveAssetsDatabase, type DB } from '@op-engineering/op-sqlite';
 
 const DB_NAME = 'muslim_db_v3.0.0.db';
 
@@ -8,12 +8,9 @@ export type DbRow = Record<string, unknown>;
 /**
  * Singleton wrapper around the Muslim Data SQLite database.
  *
- * The pre-populated database must be bundled with your app:
- * - **iOS**: Place `muslim_db_v3.0.0.db` in the app bundle (add to Xcode project).
- * - **Android**: Place `muslim_db_v3.0.0.db` in `android/app/src/main/assets/`.
- *
- * op-sqlite will automatically look for the file in the app bundle / assets
- * when using `open({ name })` without a `location`.
+ * The pre-populated database is bundled with the app via `react-native-asset`.
+ * On first launch, `moveAssetsDatabase` copies it from native assets to the
+ * documents directory where op-sqlite can open it.
  */
 export class MuslimDb {
   private static instance: MuslimDb | null = null;
@@ -29,38 +26,26 @@ export class MuslimDb {
     return MuslimDb.instance;
   }
 
-  /** Open the database connection. Must be called once before any queries. */
-  open(): void {
+  /**
+   * Open the database connection. Must be called once before any queries.
+   * This is async because it needs to copy the DB from native assets on first launch.
+   */
+  async open(): Promise<void> {
     if (this.db) return;
+
+    // Copy pre-populated DB from native assets to documents directory.
+    // Does NOT overwrite if it already exists, so this is safe to call every launch.
+    await moveAssetsDatabase({ filename: DB_NAME });
+
     this.db = open({ name: DB_NAME });
-    this.db.execute('PRAGMA foreign_keys = ON');
+    this.db.executeSync('PRAGMA foreign_keys = ON');
   }
 
   /** Execute a raw SQL query and return all result rows. */
   query(sql: string): DbRow[] {
     this.ensureOpen();
-    const result = this.db!.execute(sql);
-    if (!result.rows || result.rows.length === 0) {
-      return [];
-    }
-
-    // op-sqlite returns rows as an array of arrays with column names separately.
-    // Convert to array of objects.
-    const columns: string[] = result.columnNames ?? [];
-    const rows: DbRow[] = [];
-    for (const rawRow of result.rows._array ?? result.rows) {
-      if (Array.isArray(rawRow)) {
-        const obj: DbRow = {};
-        for (let i = 0; i < columns.length; i++) {
-          obj[columns[i]] = rawRow[i];
-        }
-        rows.push(obj);
-      } else {
-        // Already an object
-        rows.push(rawRow as DbRow);
-      }
-    }
-    return rows;
+    const result = this.db!.executeSync(sql);
+    return (result.rows ?? []) as DbRow[];
   }
 
   /** Execute a raw SQL query and return the first result row, or null. */
@@ -80,7 +65,7 @@ export class MuslimDb {
   private ensureOpen(): void {
     if (!this.db) {
       throw new Error(
-        'MuslimDb is not open. Call MuslimDb.getInstance().open() before querying.',
+        'MuslimDb is not open. Call await MuslimDb.getInstance().open() before querying.',
       );
     }
   }
