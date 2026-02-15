@@ -1,0 +1,31 @@
+{
+  "name": "react-native-muslim-data",
+  "version": "1.0.0",
+  "description": "React Native library providing Prayer Times, Offline Geocoder, Names of Allah, and Azkars (Hisnul Muslim)",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "react-native",
+    "muslim",
+    "prayer",
+    "prayer-times",
+    "hisnul-muslim",
+    "azkars",
+    "names-of-allah",
+    "islamic"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "@op-engineering/op-sqlite": ">=5.0.0",
+    "react-native": ">=0.71.0"
+  },
+  "devDependencies": {
+    "@op-engineering/op-sqlite": "^11.0.0",
+    "typescript": "^5.4.0",
+    "react-native": "^0.76.0"
+  }
+}
