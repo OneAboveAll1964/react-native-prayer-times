@@ -1,6 +1,6 @@
 {
   "name": "@shkomaghdid/react-native-prayer-times",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React Native library providing Prayer Times, Offline Geocoder, Names of Allah, and Azkars (Hisnul Muslim)",
   "main": "src/index.ts",
   "types": "src/index.ts",
