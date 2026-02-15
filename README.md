@@ -1,4 +1,4 @@
-# react-native-muslim-data
+# react-native-prayer-times
 
 A React Native library providing Islamic data **offline** — no API keys, no network required.
 
@@ -12,7 +12,7 @@ All data is available in **6 languages**: English, Arabic, Kurdish (Sorani), Kur
 ## Installation
 
 ```bash
-npm install react-native-muslim-data @op-engineering/op-sqlite
+npm install react-native-prayer-times @op-engineering/op-sqlite
 ```
 
 Then link the bundled database into your native projects:
@@ -26,7 +26,7 @@ npx react-native-asset
 ## Quick Start
 
 ```ts
-import { MuslimDb, LocationRepository, PrayerTimeRepository, createPrayerAttribute } from 'react-native-muslim-data';
+import { MuslimDb, LocationRepository, PrayerTimeRepository, createPrayerAttribute } from 'react-native-prayer-times';
 
 // 1. Open once at app startup (async — copies DB from assets on first launch)
 await MuslimDb.getInstance().open();
@@ -103,7 +103,7 @@ console.log(prayers?.dhuhr);  // Date object
 ### Prayer Attribute
 
 ```ts
-import { createPrayerAttribute, CalculationMethod, AsrMethod, HigherLatitudeMethod } from 'react-native-muslim-data';
+import { createPrayerAttribute, CalculationMethod, AsrMethod, HigherLatitudeMethod } from 'react-native-prayer-times';
 
 const attribute = createPrayerAttribute({
   calculationMethod: CalculationMethod.mwl,      // default: makkah
@@ -116,7 +116,7 @@ const attribute = createPrayerAttribute({
 ### Language
 
 ```ts
-import { Language } from 'react-native-muslim-data';
+import { Language } from 'react-native-prayer-times';
 
 Language.en           // English
 Language.ar           // Arabic
